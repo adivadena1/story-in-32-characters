@@ -1,7 +1,7 @@
 // Tell a Whole Story in 32 Characters — make.fun bounty entry.
 // Writes one Wi-Fi network name to /output/entry.txt.
 // Runs on Node 22 (TypeScript as-is), deterministic, no network, no input.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const LINE = "He Died. His Autopay Didn't.";
 
@@ -18,3 +18,11 @@ if (LINE.includes("\n") || LINE.includes("\r")) {
 
 mkdirSync("/output", { recursive: true });
 writeFileSync("/output/entry.txt", LINE, "utf8");
+
+// Read back what was written: the entry is only valid if the file on disk
+// is byte-for-byte the line above, so fail loudly instead of shipping a
+// truncated or corrupted write.
+const written = readFileSync("/output/entry.txt", "utf8");
+if (written !== LINE) {
+  throw new Error("entry.txt does not match the intended line");
+}
